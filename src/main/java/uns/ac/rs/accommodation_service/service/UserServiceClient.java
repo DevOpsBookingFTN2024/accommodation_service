@@ -21,13 +21,13 @@ public class UserServiceClient {
 
     @Autowired
     public UserServiceClient(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl(userServiceUrl).build();
+        this.webClient = webClientBuilder.build();
     }
 
     public UserDTO getUserDetails(UUID userId) {
 
         return webClient.get()
-                .uri("/users/{userId}", userId)  // URI je sada relativan, jer je osnovni URL postavljen na http://user-service:8080
+                .uri(userServiceUrl+"/users/{userId}", userId)  // URI je sada relativan, jer je osnovni URL postavljen na http://user-service:8080
                 .retrieve()
                 .bodyToMono(UserDTO.class)
                 .doOnTerminate(() -> log.info("Fetched user details"))
