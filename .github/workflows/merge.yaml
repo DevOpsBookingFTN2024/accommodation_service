@@ -36,6 +36,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Install Dependencies and Build
+        run: mvn clean install -DskipTests
+        working-directory: .
+
+      - name: Package Application
+        run: mvn package -DskipTests
+        working-directory: .
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -53,13 +61,7 @@ jobs:
       - name: Clean up
         run: docker compose -f ./docker-compose.test.yml down
 
-      - name: Install Dependencies and Build
-        run: mvn clean install -DskipTests
-        working-directory: .
-
-      - name: Package Application
-        run: mvn package -DskipTests
-        working-directory: .
+    
 
   versioning:
 
