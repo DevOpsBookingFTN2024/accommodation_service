@@ -18,17 +18,4 @@ public class AccommodationController {
     @Autowired
     private AccommodationService accommodationService;
 
-    @PostMapping("/create/{id}")
-    public ResponseEntity<MessageResponse> createAccommodation(
-            @RequestBody CreateAccommodationRequest createAccommodationRequest,
-            @PathVariable("id") UUID id) {
-        try {
-            MessageResponse messageResponse = accommodationService.createAccommodation(createAccommodationRequest, id);
-            return ResponseEntity.status(HttpStatus.CREATED).body(messageResponse);  // Status 201 za uspešan kreacija
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Invalid input: " + e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Error while creating accommodation: " + e.getMessage()));
-        }
-    }
 }
