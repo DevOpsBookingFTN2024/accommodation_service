@@ -26,19 +26,19 @@ public class AccommodationService {
     private final FacilityRepository facilityRepository;
     private final UserServiceClient userServiceClient;
     private final AvailabilityService availabilityService;
-
+    private final PhotoService photoService;
 
     @Autowired
     public AccommodationService(AccommodationRepository accommodationRepository,
                                 FacilityRepository facilityRepository,
                                 UserServiceClient userServiceClient,
-                                AvailabilityService availabilityService
-                              ) {
+                                AvailabilityService availabilityService,
+                                PhotoService photoService) {
         this.accommodationRepository = accommodationRepository;
         this.facilityRepository = facilityRepository;
         this.userServiceClient = userServiceClient;
         this.availabilityService = availabilityService;
-
+        this.photoService = photoService;
     }
 
     public MessageResponse createAccommodation(CreateAccommodationRequest createAccommodationRequest, String jwtToken) {
@@ -72,6 +72,17 @@ public class AccommodationService {
         newAccommodation.setFacilities(facilities);
         accommodationRepository.save(newAccommodation);
 
+        if(!createAccommodationRequest.getFiles().isEmpty()) {
+            Set<Photo> photos = createAccommodationRequest.getFiles().stream()
+                    .map(file -> {
+                        try {
+                            return photoService.uploadPhoto(newAccommodation, file);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return null;
+                    }).collect(Collectors.toSet());
+        }
         return new MessageResponse("Accommodation created successfully.");
     }
 
@@ -229,5 +240,4 @@ public class AccommodationService {
                 })
                 .toList();
     }
-
 }

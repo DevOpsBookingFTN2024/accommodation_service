@@ -22,4 +22,8 @@ public class Photo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_accommodation")
     private Accommodation accommodation;
+    public Photo(String url, Accommodation accommodation) {
+        this.url = url;
+        this.accommodation = accommodation;
+    }
 }

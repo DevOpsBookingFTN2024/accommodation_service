@@ -2,6 +2,7 @@ package uns.ac.rs.accommodation_service.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 import uns.ac.rs.accommodation_service.model.EApprovalStrategy;
 import uns.ac.rs.accommodation_service.model.EPricingStrategy;
 import java.util.Set;
@@ -40,4 +41,6 @@ public class CreateAccommodationRequest {
     private EApprovalStrategy approvalStrategy;
 
     private Set<UUID> facilityIds;
+
+    private Set<MultipartFile> files;
 }
