@@ -25,8 +25,8 @@ public class AccommodationController {
     @Autowired
     private AccommodationService accommodationService;
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createAccommodation(@RequestBody CreateAccommodationRequest createAccommodationRequest,
+    @PostMapping(value = "/create", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<?> createAccommodation(@ModelAttribute CreateAccommodationRequest createAccommodationRequest,
                                                  @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
         MessageResponse messageResponse = accommodationService.createAccommodation(createAccommodationRequest, jwtToken);
