@@ -8,7 +8,6 @@ public class PhotoMapper {
         return PhotoDTO.builder()
                 .id(photo.getId())
                 .url(photo.getUrl())
-                .accommodationId(photo.getAccommodation().getId())
                 .build();
     }
 }

@@ -3,7 +3,6 @@ package uns.ac.rs.accommodation_service.service;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import uns.ac.rs.accommodation_service.dto.*;
 import uns.ac.rs.accommodation_service.dto.request.CreateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAccommodationRequest;
@@ -83,6 +82,7 @@ public class AccommodationService {
                         return null;
                     }).collect(Collectors.toSet());
         }
+
         return new MessageResponse("Accommodation created successfully.");
     }
 

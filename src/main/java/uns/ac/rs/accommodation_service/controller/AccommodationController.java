@@ -6,7 +6,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import uns.ac.rs.accommodation_service.dto.AccommodationDTO;
 import uns.ac.rs.accommodation_service.dto.SearchAccommodationDTO;
 import uns.ac.rs.accommodation_service.dto.request.CreateAccommodationRequest;
@@ -15,7 +14,6 @@ import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.service.AccommodationService;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*")
