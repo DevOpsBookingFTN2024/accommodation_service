@@ -13,6 +13,7 @@ import uns.ac.rs.accommodation_service.dto.request.UpdateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.service.AccommodationService;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,10 +80,12 @@ public class AccommodationController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String country,
             @RequestParam Integer guestCount,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        List<SearchAccommodationDTO> searchAccommodationDTOS =
-                accommodationService.searchAccommodations(city, country, guestCount, startDate, endDate);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+
+        List<SearchAccommodationDTO> searchAccommodationDTOS = accommodationService.searchAccommodations(city, country,
+                guestCount, startDate.toLocalDate(), endDate.toLocalDate());
         return ResponseEntity.ok(searchAccommodationDTOS);
     }
+
 }
