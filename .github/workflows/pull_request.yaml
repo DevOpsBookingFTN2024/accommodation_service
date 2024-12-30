@@ -5,7 +5,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}/accommodation_service
 
 on:
-  push:
+  pull_request: 
+    types: [ opened, reopened, synchronize ]
     branches:
       - main
       - develop
@@ -16,6 +17,7 @@ permissions:
 
 jobs:
   build-and-test:
+    name: PR build and test
     runs-on: ubuntu-latest
 
     steps:
