@@ -14,6 +14,4 @@ public class PhotoDTO {
     private UUID id;
 
     private String url;
-
-    private UUID accommodationId;
 }

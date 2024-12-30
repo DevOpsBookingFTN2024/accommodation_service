@@ -37,34 +37,21 @@ public class PhotoService {
         this.userServiceClient = userServiceClient;
     }
 
-//    public MessageResponse uploadPhoto(UUID accommodationId, MultipartFile file, String jwtToken) throws Exception {
-//        UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
-//        if (userDetails == null) {
-//            throw new IllegalStateException("User details could not be retrieved.");
-//        }
-//
-//        if (!userDetails.getRoles().contains("ROLE_HOST")) {
-//            throw new SecurityException("User do not have permission to upload a photo.");
-//        }
-//
-//        Accommodation accommodation = accommodationRepository.findById(accommodationId)
-//                .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
-//        if (!userDetails.getUsername().equals(accommodation.getHost())) {
-//            throw new SecurityException("User is not the owner of this accommodation.");
-//        }
-//
-//        String url = saveFile(file);
-//
-//        Photo newPhoto = new Photo(
-//                url,
-//                accommodation
-//        );
-//
-//        photoRepository.save(newPhoto);
-//        return new MessageResponse("Photo uploaded successfully.");
-//    }
+    /*public MessageResponse uploadPhoto(UUID accommodationId, MultipartFile file, String jwtToken) throws Exception {
+        UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
+        if (userDetails == null) {
+            throw new IllegalStateException("User details could not be retrieved.");
+        }
 
-    public Photo uploadPhoto(Accommodation accommodation, MultipartFile file) throws Exception {
+        if (!userDetails.getRoles().contains("ROLE_HOST")) {
+            throw new SecurityException("User do not have permission to upload a photo.");
+        }
+
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+                .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
+        if (!userDetails.getUsername().equals(accommodation.getHost())) {
+            throw new SecurityException("User is not the owner of this accommodation.");
+        }
 
         String url = saveFile(file);
 
@@ -74,10 +61,20 @@ public class PhotoService {
         );
 
         photoRepository.save(newPhoto);
+        return new MessageResponse("Photo uploaded successfully.");
+    }*/
+
+    public Photo uploadPhoto(Accommodation accommodation, MultipartFile file) throws Exception {
+        String url = saveFile(file);
+
+        Photo newPhoto = new Photo(url);
+        newPhoto.setAccommodation(accommodation);
+
+        photoRepository.save(newPhoto);
         return newPhoto;
     }
 
-    public MessageResponse deletePhoto(UUID photoId, String jwtToken) {
+    /*public MessageResponse deletePhoto(UUID photoId, String jwtToken) {
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
@@ -97,7 +94,7 @@ public class PhotoService {
 
         photoRepository.delete(photo);
         return new MessageResponse("Photo deleted successfully.");
-    }
+    }*/
 
     /*public MessageResponse updatePhoto(UUID photoId, MultipartFile file, String jwtToken) throws Exception {
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
@@ -155,12 +152,12 @@ public class PhotoService {
         }
     }
 
-    public PhotoDTO getPhotoById(UUID photoId) {
+    /*public PhotoDTO getPhotoById(UUID photoId) {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new NoSuchElementException("Photo not found with id: " + photoId));
 
         return PhotoMapper.toPhotoDTO(photo);
-    }
+    }*/
 
     public List<PhotoDTO> getAllPhotosByAccommodation(UUID accommodationId) {
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
