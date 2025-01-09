@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uns.ac.rs.accommodation_service.model.Photo;
+
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,4 +35,6 @@ public class AccommodationDTO {
     private String approvalStrategy;
 
     private Set<FacilityDTO> facilities;
+
+    private Set<PhotoDTO> photos;
 }

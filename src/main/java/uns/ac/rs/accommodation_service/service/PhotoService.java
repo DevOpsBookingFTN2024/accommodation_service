@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uns.ac.rs.accommodation_service.dto.PhotoDTO;
-import uns.ac.rs.accommodation_service.dto.UserDTO;
-import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.mapper.PhotoMapper;
 import uns.ac.rs.accommodation_service.model.Accommodation;
 import uns.ac.rs.accommodation_service.model.Photo;
@@ -128,12 +126,21 @@ public class PhotoService {
 
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-        String uploadDir = "uploads/";
-        Path path = Paths.get(uploadDir + filename);
-        Files.createDirectories(path.getParent());
-        Files.write(path, file.getBytes());
+//        String uploadDir = "/uploads/";
+//        Path path = Paths.get(uploadDir + filename);
+//        Files.createDirectories(path.getParent());
+//        Files.write(path, file.getBytes());
 
-        return "/uploads/" + filename;
+        // Define the upload directory
+        String uploadDir = "uploads"; // Relative directory
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
+        Files.createDirectories(uploadPath); // Ensure the directory exists
+
+        // Save the file
+        Path filePath = uploadPath.resolve(filename);
+        Files.write(filePath, file.getBytes());
+
+        return filename;
     }
 
     private void deleteFile(String url) {
