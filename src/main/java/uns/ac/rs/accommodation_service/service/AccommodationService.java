@@ -87,9 +87,16 @@ public class AccommodationService {
     }
 
     public List<AccommodationDTO> getAllAccommodations() {
-        return accommodationRepository.findAll()
+        List<AccommodationDTO> accommodationDTOS = accommodationRepository.findAll()
                 .stream()
                 .map(AccommodationMapper::toAccommodationDTO)
+                .collect(Collectors.toList());
+        return accommodationDTOS
+                .stream()
+                .peek(accommodationDTO -> {
+                    Set<PhotoDTO> photos = new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId()));
+                    accommodationDTO.setPhotos(photos);
+                })
                 .collect(Collectors.toList());
     }
 
