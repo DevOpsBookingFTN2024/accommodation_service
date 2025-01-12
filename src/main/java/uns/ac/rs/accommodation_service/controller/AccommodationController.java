@@ -50,9 +50,9 @@ public class AccommodationController {
         return ResponseEntity.ok(accommodations);
     }
 
-    @PutMapping("/update/{accommodationId}")
+    @PutMapping(value="/update/{accommodationId}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> updateAccommodation(@PathVariable UUID accommodationId,
-                                                 @Valid @RequestBody UpdateAccommodationRequest updateAccommodationRequest,
+                                                 @ModelAttribute UpdateAccommodationRequest updateAccommodationRequest,
                                                  @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
         MessageResponse messageResponse = accommodationService.updateAccommodation(

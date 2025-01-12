@@ -1,5 +1,6 @@
 package uns.ac.rs.accommodation_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class Photo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_accommodation")
+    @JsonIgnore
     private Accommodation accommodation;
 
     public Photo(String url) {
