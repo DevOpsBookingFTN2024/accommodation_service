@@ -3,6 +3,7 @@ package uns.ac.rs.accommodation_service.service;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import uns.ac.rs.accommodation_service.dto.*;
 import uns.ac.rs.accommodation_service.dto.request.CreateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAccommodationRequest;
@@ -40,6 +41,7 @@ public class AccommodationService {
         this.photoService = photoService;
     }
 
+    @Transactional
     public MessageResponse createAccommodation(CreateAccommodationRequest createAccommodationRequest, String jwtToken) {
         if (createAccommodationRequest.getMaximumGuests() < createAccommodationRequest.getMinimumGuests()) {
             throw new IllegalArgumentException("Maximum guests must be greater than or equal to minimum guests.");
@@ -69,19 +71,13 @@ public class AccommodationService {
         Set<Facility> facilities = new HashSet<>(facilityRepository
                 .findAllByIdIn(createAccommodationRequest.getFacilityIds()));
         newAccommodation.setFacilities(facilities);
-        accommodationRepository.save(newAccommodation);
 
-        if(!createAccommodationRequest.getFiles().isEmpty()) {
-            Set<Photo> photos = createAccommodationRequest.getFiles().stream()
-                    .map(file -> {
-                        try {
-                            return photoService.uploadPhoto(newAccommodation, file);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                    }).collect(Collectors.toSet());
+        if(createAccommodationRequest.getFiles()!=null && !createAccommodationRequest.getFiles().isEmpty()) {
+
+            photoInsertion(newAccommodation, createAccommodationRequest.getFiles());
         }
+
+        accommodationRepository.save(newAccommodation);
 
         return new MessageResponse("Accommodation created successfully.");
     }
@@ -103,17 +99,26 @@ public class AccommodationService {
     public AccommodationDTO getAccommodationById(UUID accommodationId) {
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
                 .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
-
-        return AccommodationMapper.toAccommodationDTO(accommodation);
+        AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
+        accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
+        return accommodationDTO;
     }
 
     public List<AccommodationDTO> getAllAccommodationsByHost(String host) {
-        return accommodationRepository.findByHost(host)
+        List<AccommodationDTO> accommodationDTOS = accommodationRepository.findByHost(host)
                 .stream()
                 .map(AccommodationMapper::toAccommodationDTO)
                 .collect(Collectors.toList());
+        return accommodationDTOS
+                .stream()
+                .peek(accommodationDTO -> {
+                    Set<PhotoDTO> photos = new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId()));
+                    accommodationDTO.setPhotos(photos);
+                })
+                .collect(Collectors.toList());
     }
 
+    @Transactional
     public MessageResponse updateAccommodation(UUID accommodationId,
                                                UpdateAccommodationRequest updateAccommodationRequest,
                                                String jwtToken) {
@@ -149,8 +154,27 @@ public class AccommodationService {
                 .findAllByIdIn(updateAccommodationRequest.getFacilityIds()));
         accommodation.setFacilities(facilities);
 
+        if(updateAccommodationRequest.getFiles()!=null && !updateAccommodationRequest.getFiles().isEmpty()) {
+            for(PhotoDTO photo : photoService.getAllPhotosByAccommodation(accommodationId)) {
+                photoService.deletePhoto(photo.getId(), jwtToken);
+            };
+            photoInsertion(accommodation, updateAccommodationRequest.getFiles());
+        }
+
         accommodationRepository.save(accommodation);
         return new MessageResponse("Accommodation updated successfully.");
+    }
+
+    private void photoInsertion(Accommodation accommodation, Set<MultipartFile> files)  {
+        try {
+            for (MultipartFile photoFile : files) {
+                if(!photoFile.isEmpty()) {
+                    photoService.uploadPhoto(accommodation, photoFile);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     //potrebno je doraditi kad se zavrsi ReservationService
@@ -199,10 +223,13 @@ public class AccommodationService {
                                                              Integer guestCount,
                                                              LocalDate startDate,
                                                              LocalDate endDate) {
-        Integer daysInRange = Math.toIntExact(ChronoUnit.DAYS.between(startDate, endDate) + 1);
+        Integer daysInRange = Math.toIntExact(ChronoUnit.DAYS.between(startDate, endDate));
+        System.out.println(daysInRange);
+        LocalDate finalEndDate = endDate.minusDays(1);
 
         List<Accommodation> accommodations = accommodationRepository
-                .findMatchingAccommodations(city, country, guestCount, startDate, endDate, daysInRange);
+                .findMatchingAccommodations(city, country, guestCount, startDate, finalEndDate, daysInRange);
+
 
         return accommodations.stream()
                 .map(accommodation -> {
@@ -212,7 +239,7 @@ public class AccommodationService {
                     List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
                             .filter(av -> av.getDate() != null &&
                                     !av.getDate().isBefore(startDate) &&
-                                    !av.getDate().isAfter(endDate))
+                                    !av.getDate().isAfter(finalEndDate))
                             .toList();
 
                     Double pricePerGuest = availabilities.stream()
@@ -229,6 +256,7 @@ public class AccommodationService {
                         totalPrice = availabilities.stream()
                                 .mapToDouble(AvailabilityDTO::getPricePerUnit)
                                 .sum();
+                        pricePerUnit = totalPrice/daysInRange;
                     } else {
                         if (pricePerGuest != null)
                             totalPrice = pricePerGuest * guestCount * daysInRange;
@@ -237,7 +265,7 @@ public class AccommodationService {
                     Set<Facility> facilities = accommodation.getFacilities();
 
                     AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
-
+                    accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
                     return SearchAccommodationDTO.builder()
                             .accommodationDTO(accommodationDTO)
                             .pricePerGuest(pricePerGuest)

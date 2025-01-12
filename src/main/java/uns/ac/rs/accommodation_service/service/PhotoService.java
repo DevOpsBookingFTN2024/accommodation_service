@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uns.ac.rs.accommodation_service.dto.PhotoDTO;
+import uns.ac.rs.accommodation_service.dto.UserDTO;
+import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.mapper.PhotoMapper;
 import uns.ac.rs.accommodation_service.model.Accommodation;
 import uns.ac.rs.accommodation_service.model.Photo;
@@ -72,7 +74,7 @@ public class PhotoService {
         return newPhoto;
     }
 
-    /*public MessageResponse deletePhoto(UUID photoId, String jwtToken) {
+    public MessageResponse deletePhoto(UUID photoId, String jwtToken) {
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
@@ -92,7 +94,7 @@ public class PhotoService {
 
         photoRepository.delete(photo);
         return new MessageResponse("Photo deleted successfully.");
-    }*/
+    }
 
     /*public MessageResponse updatePhoto(UUID photoId, MultipartFile file, String jwtToken) throws Exception {
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
@@ -126,11 +128,6 @@ public class PhotoService {
 
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-//        String uploadDir = "/uploads/";
-//        Path path = Paths.get(uploadDir + filename);
-//        Files.createDirectories(path.getParent());
-//        Files.write(path, file.getBytes());
-
         // Define the upload directory
         String uploadDir = "uploads"; // Relative directory
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
@@ -145,9 +142,15 @@ public class PhotoService {
 
     private void deleteFile(String url) {
         try {
-            String baseDir = System.getProperty("user.dir");
-            String fullPath = baseDir + url;
-            Path path = Paths.get(fullPath);
+//            String baseDir = System.getProperty("uploads");
+//            String fullPath = baseDir + url;
+//            Path path = Paths.get(fullPath);
+
+            String uploadDir = "uploads"; // Relative directory
+            Path uploadPath = Paths.get(uploadDir);
+            Path path = uploadPath.resolve(url);
+
+            System.out.println(path);
 
             if (Files.exists(path)) {
                 Files.delete(path);
