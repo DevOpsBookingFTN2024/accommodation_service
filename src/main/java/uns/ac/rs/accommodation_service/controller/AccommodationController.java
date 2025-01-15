@@ -1,6 +1,5 @@
 package uns.ac.rs.accommodation_service.controller;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -12,7 +11,6 @@ import uns.ac.rs.accommodation_service.dto.request.CreateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.service.AccommodationService;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -82,10 +80,8 @@ public class AccommodationController {
             @RequestParam Integer guestCount,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-
         List<SearchAccommodationDTO> searchAccommodationDTOS = accommodationService.searchAccommodations(city, country,
                 guestCount, startDate.toLocalDate(), endDate.toLocalDate());
         return ResponseEntity.ok(searchAccommodationDTOS);
     }
-
 }

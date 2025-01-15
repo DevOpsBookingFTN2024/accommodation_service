@@ -9,6 +9,8 @@ import uns.ac.rs.accommodation_service.dto.request.CreateAvailabilityRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAvailabilityRequest;
 import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.service.AvailabilityService;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,7 +50,7 @@ public class AvailabilityController {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
         MessageResponse messageResponse = availabilityService.updateAvailability(
                 availabilityId, updateAvailabilityRequest, jwtToken);
-        return ResponseEntity.ok(messageResponse );
+        return ResponseEntity.ok(messageResponse);
     }
 
     @PutMapping("/reserve")
@@ -56,6 +58,17 @@ public class AvailabilityController {
                                                    @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
         MessageResponse messageResponse = availabilityService.reserveAvailabilities(availabilityDTOs, jwtToken);
-        return ResponseEntity.ok(messageResponse );
+        return ResponseEntity.ok(messageResponse);
+    }
+
+    @PutMapping("/release/{accommodationId}")
+    public ResponseEntity<?> releaseAvailabilities(@PathVariable UUID accommodationId,
+                                                   @RequestParam LocalDate dateFrom,
+                                                   @RequestParam LocalDate dateTo,
+                                                   @RequestHeader("Authorization") String authorizationHeader) {
+        String jwtToken = authorizationHeader.replace("Bearer ", "");
+        MessageResponse messageResponse = availabilityService.releaseAvailabilities(accommodationId,
+                dateFrom, dateTo, jwtToken);
+        return ResponseEntity.ok(messageResponse);
     }
 }
