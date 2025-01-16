@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uns.ac.rs.accommodation_service.dto.AccommodationDTO;
 import uns.ac.rs.accommodation_service.dto.SearchAccommodationDTO;
+import uns.ac.rs.accommodation_service.dto.SelectAccommodationDTO;
 import uns.ac.rs.accommodation_service.dto.request.CreateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
@@ -45,6 +46,12 @@ public class AccommodationController {
     @GetMapping("/all/{host}")
     public ResponseEntity<?> getAllAccommodationsByHost(@PathVariable String host) {
         List<AccommodationDTO> accommodations = accommodationService.getAllAccommodationsByHost(host);
+        return ResponseEntity.ok(accommodations);
+    }
+
+    @GetMapping("/allSelect/{host}")
+    public ResponseEntity<?> getAllSelectAccommodationsByHost(@PathVariable String host) {
+        List<SelectAccommodationDTO> accommodations = accommodationService.getAllSelectAccommodationsByHost(host);
         return ResponseEntity.ok(accommodations);
     }
 
