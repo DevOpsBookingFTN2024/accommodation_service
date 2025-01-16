@@ -153,4 +153,57 @@ public class AvailabilityService {
         availabilityRepository.saveAll(availabilitiesToReserve);
         return new MessageResponse("Selected availabilities have been successfully reserved.");
     }
+
+    public MessageResponse releaseAvailabilities(UUID accommodationId,
+                                                 LocalDate dateFrom,
+                                                 LocalDate dateTo,
+                                                 String jwtToken) {
+        UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
+        if (userDetails == null) {
+            throw new IllegalStateException("User details could not be retrieved.");
+        }
+
+        if (!userDetails.getRoles().contains("ROLE_GUEST")) {
+            throw new SecurityException("User do not have permission to release an availability.");
+        }
+
+        Set<LocalDate> dates = dateFrom.datesUntil(dateTo.plusDays(1))
+                .collect(Collectors.toSet());
+        List<AvailabilityDTO> availabilities = getAllAvailabilitiesByAccommodation(accommodationId);
+
+        List<Optional<AvailabilityDTO>> selectedAvailabilities = new ArrayList<>();
+        for (LocalDate date : dates) {
+            Optional<AvailabilityDTO> availability = availabilities.stream()
+                    .filter(a -> a.getDate().equals(date))
+                    .findFirst();
+
+            if (availability.isEmpty()) {
+                throw new NoSuchElementException("No availability data found for the date: " + date);
+            }
+
+            if (!availability.get().getIsAvailable()) {
+                throw new SecurityException("The date " + date + " is not available.");
+            }
+
+            selectedAvailabilities.add(availability);
+        }
+
+        List<AvailabilityDTO> convertedAvailabilities = selectedAvailabilities.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+
+        List<Availability> availabilitiesToRelease = new ArrayList<>();
+        for (AvailabilityDTO dto : convertedAvailabilities) {
+            Availability availability = availabilityRepository.findById(dto.getId())
+                    .orElseThrow(() -> new NoSuchElementException("Availability not found with id: " + dto.getId()));
+
+            availability.setIsReserved(false);
+            availability.setIsAvailable(true);
+            availabilitiesToRelease.add(availability);
+        }
+
+        availabilityRepository.saveAll(availabilitiesToRelease);
+        return new MessageResponse("Selected availabilities have been successfully released.");
+    }
 }
