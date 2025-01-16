@@ -118,6 +118,16 @@ public class AccommodationService {
                 .collect(Collectors.toList());
     }
 
+    public List<SelectAccommodationDTO> getAllSelectAccommodationsByHost(String host) {
+        return  accommodationRepository.findByHost(host)
+                .stream()
+                .map(accommodation -> {
+                    return new SelectAccommodationDTO(accommodation.getId(), accommodation.getName());
+                })
+                .collect(Collectors.toList());
+
+    }
+
     @Transactional
     public MessageResponse updateAccommodation(UUID accommodationId,
                                                UpdateAccommodationRequest updateAccommodationRequest,
@@ -226,6 +236,7 @@ public class AccommodationService {
         Integer daysInRange = Math.toIntExact(ChronoUnit.DAYS.between(startDate, endDate));
         System.out.println(daysInRange);
         LocalDate finalEndDate = endDate.minusDays(1);
+        System.out.println(finalEndDate);
 
         List<Accommodation> accommodations = accommodationRepository
                 .findMatchingAccommodations(city, country, guestCount, startDate, finalEndDate, daysInRange);
