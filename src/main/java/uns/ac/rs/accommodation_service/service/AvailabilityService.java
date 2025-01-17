@@ -48,7 +48,6 @@ public class AvailabilityService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
             throw new SecurityException("User do not have permission to create an availability.");
         }
@@ -63,6 +62,7 @@ public class AvailabilityService {
             if (availabilityRepository.existsByAccommodationAndDate(accommodation, date)) {
                 throw new SecurityException("Availability already exists for date: " + date);
             }
+
             Availability newAvailability = new Availability(
                     date,
                     createAvailabilityRequest.getPricePerGuest(),
@@ -103,7 +103,6 @@ public class AvailabilityService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
             throw new SecurityException("User do not have permission to update an availability.");
         }
@@ -135,7 +134,6 @@ public class AvailabilityService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_GUEST")) {
             throw new SecurityException("User do not have permission to reserve an availability.");
         }
@@ -162,7 +160,6 @@ public class AvailabilityService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_GUEST")) {
             throw new SecurityException("User do not have permission to release an availability.");
         }
