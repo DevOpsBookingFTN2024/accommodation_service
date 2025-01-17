@@ -37,33 +37,6 @@ public class PhotoService {
         this.userServiceClient = userServiceClient;
     }
 
-    /*public MessageResponse uploadPhoto(UUID accommodationId, MultipartFile file, String jwtToken) throws Exception {
-        UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
-        if (userDetails == null) {
-            throw new IllegalStateException("User details could not be retrieved.");
-        }
-
-        if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to upload a photo.");
-        }
-
-        Accommodation accommodation = accommodationRepository.findById(accommodationId)
-                .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
-        if (!userDetails.getUsername().equals(accommodation.getHost())) {
-            throw new SecurityException("User is not the owner of this accommodation.");
-        }
-
-        String url = saveFile(file);
-
-        Photo newPhoto = new Photo(
-                url,
-                accommodation
-        );
-
-        photoRepository.save(newPhoto);
-        return new MessageResponse("Photo uploaded successfully.");
-    }*/
-
     public Photo uploadPhoto(Accommodation accommodation, MultipartFile file) throws Exception {
         String url = saveFile(file);
 
@@ -79,7 +52,6 @@ public class PhotoService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
             throw new SecurityException("User do not have permission to delete a photo.");
         }
@@ -96,31 +68,6 @@ public class PhotoService {
         return new MessageResponse("Photo deleted successfully.");
     }
 
-    /*public MessageResponse updatePhoto(UUID photoId, MultipartFile file, String jwtToken) throws Exception {
-        UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
-        if (userDetails == null) {
-            throw new IllegalStateException("User details could not be retrieved.");
-        }
-
-        if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to update a photo.");
-        }
-
-        Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new NoSuchElementException("Photo not found with id: " + photoId));
-        if (!userDetails.getUsername().equals(photo.getAccommodation().getHost())) {
-            throw new SecurityException("User is not the owner of this accommodation.");
-        }
-
-        deleteFile(photo.getUrl());
-
-        String newUrl = saveFile(file);
-        photo.setUrl(newUrl);
-
-        photoRepository.save(photo);
-        return new MessageResponse("Photo updated successfully.");
-    }*/
-
     public String saveFile(MultipartFile file) throws Exception {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty.");
@@ -128,12 +75,10 @@ public class PhotoService {
 
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-        // Define the upload directory
-        String uploadDir = "uploads"; // Relative directory
+        String uploadDir = "uploads";
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
-        Files.createDirectories(uploadPath); // Ensure the directory exists
+        Files.createDirectories(uploadPath);
 
-        // Save the file
         Path filePath = uploadPath.resolve(filename);
         Files.write(filePath, file.getBytes());
 
@@ -142,15 +87,9 @@ public class PhotoService {
 
     private void deleteFile(String url) {
         try {
-//            String baseDir = System.getProperty("uploads");
-//            String fullPath = baseDir + url;
-//            Path path = Paths.get(fullPath);
-
-            String uploadDir = "uploads"; // Relative directory
+            String uploadDir = "uploads";
             Path uploadPath = Paths.get(uploadDir);
             Path path = uploadPath.resolve(url);
-
-            System.out.println(path);
 
             if (Files.exists(path)) {
                 Files.delete(path);
@@ -161,13 +100,6 @@ public class PhotoService {
             throw new IllegalStateException("Error while deleting file: " + url, e);
         }
     }
-
-    /*public PhotoDTO getPhotoById(UUID photoId) {
-        Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new NoSuchElementException("Photo not found with id: " + photoId));
-
-        return PhotoMapper.toPhotoDTO(photo);
-    }*/
 
     public List<PhotoDTO> getAllPhotosByAccommodation(UUID accommodationId) {
         Accommodation accommodation = accommodationRepository.findById(accommodationId)

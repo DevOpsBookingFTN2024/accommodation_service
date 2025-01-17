@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uns.ac.rs.accommodation_service.dto.PhotoDTO;
 import uns.ac.rs.accommodation_service.service.PhotoService;
-
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,8 +21,8 @@ import java.util.UUID;
 public class PhotoController {
     @Autowired
     private PhotoService photoService;
-    private final Path externalFolder = Paths.get("uploads");
 
+    private final Path externalFolder = Paths.get("uploads");
 
     @GetMapping("/all/{accommodationId}")
     public ResponseEntity<?> getAllPhotosByAccommodation(@PathVariable UUID accommodationId) {
@@ -41,21 +39,17 @@ public class PhotoController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Determine the file's content type
             String contentType = Files.probeContentType(filePath);
             if (contentType == null) {
-                contentType = "application/octet-stream"; // Fallback for unknown file types
+                contentType = "application/octet-stream";
             }
 
-            // Build and return the response
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileResource.getFilename() + "\"")
                     .body(fileResource);
-
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
-
 }

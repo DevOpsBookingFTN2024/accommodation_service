@@ -73,7 +73,6 @@ public class AccommodationService {
         newAccommodation.setFacilities(facilities);
 
         if(createAccommodationRequest.getFiles()!=null && !createAccommodationRequest.getFiles().isEmpty()) {
-
             photoInsertion(newAccommodation, createAccommodationRequest.getFiles());
         }
 
@@ -86,7 +85,7 @@ public class AccommodationService {
         List<AccommodationDTO> accommodationDTOS = accommodationRepository.findAll()
                 .stream()
                 .map(AccommodationMapper::toAccommodationDTO)
-                .collect(Collectors.toList());
+                .toList();
         return accommodationDTOS
                 .stream()
                 .peek(accommodationDTO -> {
@@ -108,7 +107,7 @@ public class AccommodationService {
         List<AccommodationDTO> accommodationDTOS = accommodationRepository.findByHost(host)
                 .stream()
                 .map(AccommodationMapper::toAccommodationDTO)
-                .collect(Collectors.toList());
+                .toList();
         return accommodationDTOS
                 .stream()
                 .peek(accommodationDTO -> {
@@ -167,7 +166,7 @@ public class AccommodationService {
         if(updateAccommodationRequest.getFiles()!=null && !updateAccommodationRequest.getFiles().isEmpty()) {
             for(PhotoDTO photo : photoService.getAllPhotosByAccommodation(accommodationId)) {
                 photoService.deletePhoto(photo.getId(), jwtToken);
-            };
+            }
             photoInsertion(accommodation, updateAccommodationRequest.getFiles());
         }
 
@@ -185,6 +184,60 @@ public class AccommodationService {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    public List<SearchAccommodationDTO> searchAccommodations(String city,
+                                                             String country,
+                                                             Integer guestCount,
+                                                             LocalDate startDate,
+                                                             LocalDate endDate) {
+        Integer daysInRange = Math.toIntExact(ChronoUnit.DAYS.between(startDate, endDate));
+        LocalDate finalEndDate = endDate.minusDays(1);
+
+        List<Accommodation> accommodations = accommodationRepository
+                .findMatchingAccommodations(city, country, guestCount, startDate, finalEndDate, daysInRange);
+
+        return accommodations.stream()
+                .map(accommodation -> {
+                    Double totalPrice = 0.0;
+                    List<AvailabilityDTO> availabilitiesAll = availabilityService.getAllAvailabilitiesByAccommodation(accommodation.getId());
+
+                    List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
+                            .filter(av -> av.getDate() != null &&
+                                    !av.getDate().isBefore(startDate) &&
+                                    !av.getDate().isAfter(finalEndDate))
+                            .toList();
+
+                    Double pricePerGuest = availabilities.stream()
+                            .map(AvailabilityDTO::getPricePerGuest)
+                            .findFirst()
+                            .orElse(null);
+
+                    Double pricePerUnit = availabilities.stream()
+                            .map(AvailabilityDTO::getPricePerUnit)
+                            .findFirst()
+                            .orElse(null);
+
+                    if (accommodation.getPricingStrategy() == EPricingStrategy.PER_UNIT){
+                        totalPrice = availabilities.stream()
+                                .mapToDouble(AvailabilityDTO::getPricePerUnit)
+                                .sum();
+                        pricePerUnit = totalPrice/daysInRange;
+                    } else {
+                        if (pricePerGuest != null)
+                            totalPrice = pricePerGuest * guestCount * daysInRange;
+                    }
+
+                    AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
+                    accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
+                    return SearchAccommodationDTO.builder()
+                            .accommodationDTO(accommodationDTO)
+                            .pricePerGuest(pricePerGuest)
+                            .pricePerUnit(pricePerUnit)
+                            .priceAll(totalPrice)
+                            .build();
+                })
+                .toList();
     }
 
     //potrebno je doraditi kad se zavrsi ReservationService
@@ -226,64 +279,5 @@ public class AccommodationService {
 
         accommodationRepository.deleteAll(accommodations);
         return new MessageResponse("All accommodations deleted successfully.");
-    }
-
-    public List<SearchAccommodationDTO> searchAccommodations(String city,
-                                                             String country,
-                                                             Integer guestCount,
-                                                             LocalDate startDate,
-                                                             LocalDate endDate) {
-        Integer daysInRange = Math.toIntExact(ChronoUnit.DAYS.between(startDate, endDate));
-        System.out.println(daysInRange);
-        LocalDate finalEndDate = endDate.minusDays(1);
-        System.out.println(finalEndDate);
-
-        List<Accommodation> accommodations = accommodationRepository
-                .findMatchingAccommodations(city, country, guestCount, startDate, finalEndDate, daysInRange);
-
-
-        return accommodations.stream()
-                .map(accommodation -> {
-                    Double totalPrice = 0.0;
-                    List<AvailabilityDTO> availabilitiesAll = availabilityService.getAllAvailabilitiesByAccommodation(accommodation.getId());
-
-                    List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
-                            .filter(av -> av.getDate() != null &&
-                                    !av.getDate().isBefore(startDate) &&
-                                    !av.getDate().isAfter(finalEndDate))
-                            .toList();
-
-                    Double pricePerGuest = availabilities.stream()
-                            .map(AvailabilityDTO::getPricePerGuest)
-                            .findFirst()
-                            .orElse(null);
-
-                    Double pricePerUnit = availabilities.stream()
-                            .map(AvailabilityDTO::getPricePerUnit)
-                            .findFirst()
-                            .orElse(null);
-
-                    if (accommodation.getPricingStrategy() == EPricingStrategy.PER_UNIT){
-                        totalPrice = availabilities.stream()
-                                .mapToDouble(AvailabilityDTO::getPricePerUnit)
-                                .sum();
-                        pricePerUnit = totalPrice/daysInRange;
-                    } else {
-                        if (pricePerGuest != null)
-                            totalPrice = pricePerGuest * guestCount * daysInRange;
-                    }
-
-                    Set<Facility> facilities = accommodation.getFacilities();
-
-                    AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
-                    accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
-                    return SearchAccommodationDTO.builder()
-                            .accommodationDTO(accommodationDTO)
-                            .pricePerGuest(pricePerGuest)
-                            .pricePerUnit(pricePerUnit)
-                            .priceAll(totalPrice)
-                            .build();
-                })
-                .toList();
     }
 }

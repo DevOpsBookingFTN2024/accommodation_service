@@ -9,7 +9,6 @@ import uns.ac.rs.accommodation_service.dto.request.CreateAvailabilityRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAvailabilityRequest;
 import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.service.AvailabilityService;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
