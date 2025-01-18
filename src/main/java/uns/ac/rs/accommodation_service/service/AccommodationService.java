@@ -51,9 +51,8 @@ public class AccommodationService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to create an accommodation.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         Accommodation newAccommodation = new Accommodation(
@@ -139,9 +138,8 @@ public class AccommodationService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to update an accommodation.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
@@ -246,9 +244,8 @@ public class AccommodationService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to delete an accommodation.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
@@ -267,9 +264,8 @@ public class AccommodationService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to delete accommodations.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         List<Accommodation> accommodations = accommodationRepository.findByHost(userDetails.getUsername());
