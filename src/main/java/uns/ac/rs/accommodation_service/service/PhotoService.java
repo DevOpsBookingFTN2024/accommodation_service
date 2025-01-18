@@ -53,7 +53,7 @@ public class PhotoService {
             throw new IllegalStateException("User details could not be retrieved.");
         }
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to delete a photo.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         Photo photo = photoRepository.findById(photoId)

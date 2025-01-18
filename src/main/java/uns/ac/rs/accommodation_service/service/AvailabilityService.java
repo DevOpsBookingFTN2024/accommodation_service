@@ -41,7 +41,7 @@ public class AvailabilityService {
             throw new IllegalArgumentException("End date must be equal to or after the start date.");
         }
         Set<LocalDate> dates = createAvailabilityRequest.getDateFrom()
-                .datesUntil(createAvailabilityRequest.getDateTo().plusDays(1))
+                .datesUntil(createAvailabilityRequest.getDateTo())
                 .collect(Collectors.toSet());
 
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
@@ -49,7 +49,7 @@ public class AvailabilityService {
             throw new IllegalStateException("User details could not be retrieved.");
         }
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to create an availability.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
@@ -104,7 +104,7 @@ public class AvailabilityService {
             throw new IllegalStateException("User details could not be retrieved.");
         }
         if (!userDetails.getRoles().contains("ROLE_HOST")) {
-            throw new SecurityException("User do not have permission to update an availability.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         Availability availability = availabilityRepository.findById(availabilityId)
@@ -134,8 +134,8 @@ public class AvailabilityService {
         if (userDetails == null) {
             throw new IllegalStateException("User details could not be retrieved.");
         }
-        if (!userDetails.getRoles().contains("ROLE_GUEST")) {
-            throw new SecurityException("User do not have permission to reserve an availability.");
+        if (!userDetails.getRoles().contains("ROLE_GUEST") && !userDetails.getRoles().contains("ROLE_HOST")) {
+            throw new SecurityException("User do not have permission for this action.");
         }
 
         List<Availability> availabilitiesToReserve = new ArrayList<>();
@@ -161,11 +161,10 @@ public class AvailabilityService {
             throw new IllegalStateException("User details could not be retrieved.");
         }
         if (!userDetails.getRoles().contains("ROLE_GUEST")) {
-            throw new SecurityException("User do not have permission to release an availability.");
+            throw new SecurityException("User do not have permission for this action.");
         }
 
-        Set<LocalDate> dates = dateFrom.datesUntil(dateTo.plusDays(1))
-                .collect(Collectors.toSet());
+        Set<LocalDate> dates = dateFrom.datesUntil(dateTo).collect(Collectors.toSet());
         List<AvailabilityDTO> availabilities = getAllAvailabilitiesByAccommodation(accommodationId);
 
         List<Optional<AvailabilityDTO>> selectedAvailabilities = new ArrayList<>();
@@ -176,10 +175,6 @@ public class AvailabilityService {
 
             if (availability.isEmpty()) {
                 throw new NoSuchElementException("No availability data found for the date: " + date);
-            }
-
-            if (!availability.get().getIsAvailable()) {
-                throw new SecurityException("The date " + date + " is not available.");
             }
 
             selectedAvailabilities.add(availability);
