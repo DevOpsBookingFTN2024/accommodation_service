@@ -15,6 +15,7 @@ import uns.ac.rs.accommodation_service.model.Facility;
 import uns.ac.rs.accommodation_service.repository.AccommodationRepository;
 import uns.ac.rs.accommodation_service.repository.FacilityRepository;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.time.temporal.ChronoUnit;
@@ -102,16 +103,26 @@ public class AccommodationService {
         return accommodationDTO;
     }
 
-    public List<AccommodationDTO> getAllAccommodationsByHost(String host) {
-        List<AccommodationDTO> accommodationDTOS = accommodationRepository.findByHost(host)
-                .stream()
-                .map(AccommodationMapper::toAccommodationDTO)
+    public List<SearchAccommodationDTO> getAllAccommodationsByHost(String host) {
+        List<Accommodation> accommodations = accommodationRepository.findByHost(host);
+        List<SearchAccommodationDTO> searchAccommodationDTOS = accommodations.stream()
+                .map(accommodation -> {
+
+                    List<AvailabilityDTO> availabilitiesAll = availabilityService.getAllAvailabilitiesByAccommodation(accommodation.getId());
+
+                    List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
+                            .filter(av -> av.getDate() != null &&
+                                    av.getDate().isEqual(LocalDate.from(ZonedDateTime.now())))
+                            .toList();
+
+                    return getSearchAccommodationObject(accommodation, availabilities, 1, 1);
+                })
                 .toList();
-        return accommodationDTOS
+        return searchAccommodationDTOS
                 .stream()
-                .peek(accommodationDTO -> {
-                    Set<PhotoDTO> photos = new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId()));
-                    accommodationDTO.setPhotos(photos);
+                .peek(searchAccommodationDTO -> {
+                    Set<PhotoDTO> photos = new HashSet<>(photoService.getAllPhotosByAccommodation(searchAccommodationDTO.getAccommodationDTO().getId()));
+                    searchAccommodationDTO.getAccommodationDTO().setPhotos(photos);
                 })
                 .collect(Collectors.toList());
     }
@@ -197,7 +208,7 @@ public class AccommodationService {
 
         return accommodations.stream()
                 .map(accommodation -> {
-                    Double totalPrice = 0.0;
+
                     List<AvailabilityDTO> availabilitiesAll = availabilityService.getAllAvailabilitiesByAccommodation(accommodation.getId());
 
                     List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
@@ -206,36 +217,42 @@ public class AccommodationService {
                                     !av.getDate().isAfter(finalEndDate))
                             .toList();
 
-                    Double pricePerGuest = availabilities.stream()
-                            .map(AvailabilityDTO::getPricePerGuest)
-                            .findFirst()
-                            .orElse(null);
-
-                    Double pricePerUnit = availabilities.stream()
-                            .map(AvailabilityDTO::getPricePerUnit)
-                            .findFirst()
-                            .orElse(null);
-
-                    if (accommodation.getPricingStrategy() == EPricingStrategy.PER_UNIT){
-                        totalPrice = availabilities.stream()
-                                .mapToDouble(AvailabilityDTO::getPricePerUnit)
-                                .sum();
-                        pricePerUnit = totalPrice/daysInRange;
-                    } else {
-                        if (pricePerGuest != null)
-                            totalPrice = pricePerGuest * guestCount * daysInRange;
-                    }
-
-                    AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
-                    accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
-                    return SearchAccommodationDTO.builder()
-                            .accommodationDTO(accommodationDTO)
-                            .pricePerGuest(pricePerGuest)
-                            .pricePerUnit(pricePerUnit)
-                            .priceAll(totalPrice)
-                            .build();
+                    return getSearchAccommodationObject(accommodation, availabilities, daysInRange, guestCount);
                 })
                 .toList();
+    }
+
+    private SearchAccommodationDTO getSearchAccommodationObject(Accommodation accommodation, List<AvailabilityDTO> availabilities, Integer daysInRange, Integer guestCount ){
+        Double pricePerGuest = availabilities.stream()
+                .map(AvailabilityDTO::getPricePerGuest)
+                .findFirst()
+                .orElse(null);
+
+        Double pricePerUnit = availabilities.stream()
+                .map(AvailabilityDTO::getPricePerUnit)
+                .findFirst()
+                .orElse(null);
+
+        Double totalPrice = 0.0;
+
+        if (accommodation.getPricingStrategy() == EPricingStrategy.PER_UNIT){
+            totalPrice = availabilities.stream()
+                    .mapToDouble(AvailabilityDTO::getPricePerUnit)
+                    .sum();
+            pricePerUnit = totalPrice/daysInRange;
+        } else {
+            if (pricePerGuest != null)
+                totalPrice = pricePerGuest * guestCount * daysInRange;
+        }
+
+        AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
+        accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
+        return SearchAccommodationDTO.builder()
+                .accommodationDTO(accommodationDTO)
+                .pricePerGuest(pricePerGuest)
+                .pricePerUnit(pricePerUnit)
+                .priceAll(totalPrice)
+                .build();
     }
 
     //potrebno je doraditi kad se zavrsi ReservationService
