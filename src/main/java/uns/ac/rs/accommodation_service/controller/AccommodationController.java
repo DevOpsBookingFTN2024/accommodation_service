@@ -45,7 +45,7 @@ public class AccommodationController {
 
     @GetMapping("/all/{host}")
     public ResponseEntity<?> getAllAccommodationsByHost(@PathVariable String host) {
-        List<AccommodationDTO> accommodations = accommodationService.getAllAccommodationsByHost(host);
+        List<SearchAccommodationDTO> accommodations = accommodationService.getAllAccommodationsByHost(host);
         return ResponseEntity.ok(accommodations);
     }
 
