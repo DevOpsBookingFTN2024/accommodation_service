@@ -12,6 +12,7 @@ import uns.ac.rs.accommodation_service.model.Accommodation;
 import uns.ac.rs.accommodation_service.model.Photo;
 import uns.ac.rs.accommodation_service.repository.PhotoRepository;
 import uns.ac.rs.accommodation_service.repository.AccommodationRepository;
+import uns.ac.rs.accommodation_service.service.client.UserServiceClient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +26,9 @@ import java.util.stream.Collectors;
 @Transactional
 public class PhotoService {
     private final PhotoRepository photoRepository;
+
     private final AccommodationRepository accommodationRepository;
+
     private final UserServiceClient userServiceClient;
 
     @Autowired
@@ -65,7 +68,18 @@ public class PhotoService {
         deleteFile(photo.getUrl());
 
         photoRepository.delete(photo);
+
         return new MessageResponse("Photo deleted successfully.");
+    }
+
+    public List<PhotoDTO> getAllPhotosByAccommodation(UUID accommodationId) {
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+                .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
+
+        return photoRepository.findByAccommodation(accommodation)
+                .stream()
+                .map(PhotoMapper::toPhotoDTO)
+                .collect(Collectors.toList());
     }
 
     public String saveFile(MultipartFile file) throws Exception {
@@ -99,15 +113,5 @@ public class PhotoService {
         } catch (IOException e) {
             throw new IllegalStateException("Error while deleting file: " + url, e);
         }
-    }
-
-    public List<PhotoDTO> getAllPhotosByAccommodation(UUID accommodationId) {
-        Accommodation accommodation = accommodationRepository.findById(accommodationId)
-                .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
-
-        return photoRepository.findByAccommodation(accommodation)
-                .stream()
-                .map(PhotoMapper::toPhotoDTO)
-                .collect(Collectors.toList());
     }
 }

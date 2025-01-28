@@ -12,6 +12,7 @@ import uns.ac.rs.accommodation_service.model.Accommodation;
 import uns.ac.rs.accommodation_service.model.Availability;
 import uns.ac.rs.accommodation_service.repository.AccommodationRepository;
 import uns.ac.rs.accommodation_service.repository.AvailabilityRepository;
+import uns.ac.rs.accommodation_service.service.client.UserServiceClient;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,7 +21,9 @@ import java.util.stream.Collectors;
 @Transactional
 public class AvailabilityService {
     private final AvailabilityRepository availabilityRepository;
+
     private final AccommodationRepository accommodationRepository;
+
     private final UserServiceClient userServiceClient;
 
     public AvailabilityService(AvailabilityRepository availabilityRepository,
@@ -68,6 +71,7 @@ public class AvailabilityService {
                     createAvailabilityRequest.getPricePerGuest(),
                     createAvailabilityRequest.getPricePerUnit()
             );
+
             newAvailability.setIsAvailable(true);
             newAvailability.setIsReserved(false);
             newAvailability.setAccommodation(accommodation);
@@ -126,9 +130,11 @@ public class AvailabilityService {
         availability.setPricePerUnit(updateAvailabilityRequest.getPricePerUnit());
 
         availabilityRepository.save(availability);
+
         return new MessageResponse("Availability updated successfully.");
     }
 
+    //metodu koristi ReservationService
     public MessageResponse reserveAvailabilities(List<AvailabilityDTO> availabilityDTOs, String jwtToken) {
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
         if (userDetails == null) {
@@ -149,9 +155,11 @@ public class AvailabilityService {
         }
 
         availabilityRepository.saveAll(availabilitiesToReserve);
+
         return new MessageResponse("Selected availabilities have been successfully reserved.");
     }
 
+    //metodu koristi ReservationService
     public MessageResponse releaseAvailabilities(UUID accommodationId,
                                                  LocalDate dateFrom,
                                                  LocalDate dateTo,
@@ -169,7 +177,8 @@ public class AvailabilityService {
 
         List<Optional<AvailabilityDTO>> selectedAvailabilities = new ArrayList<>();
         for (LocalDate date : dates) {
-            Optional<AvailabilityDTO> availability = availabilities.stream()
+            Optional<AvailabilityDTO> availability = availabilities
+                    .stream()
                     .filter(a -> a.getDate().equals(date))
                     .findFirst();
 
@@ -180,7 +189,8 @@ public class AvailabilityService {
             selectedAvailabilities.add(availability);
         }
 
-        List<AvailabilityDTO> convertedAvailabilities = selectedAvailabilities.stream()
+        List<AvailabilityDTO> convertedAvailabilities = selectedAvailabilities
+                .stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
@@ -196,6 +206,13 @@ public class AvailabilityService {
         }
 
         availabilityRepository.saveAll(availabilitiesToRelease);
+
         return new MessageResponse("Selected availabilities have been successfully released.");
+    }
+
+    public void deleteAvailabilitiesForAccommodation(Accommodation accommodation) {
+        List<Availability> availabilitiesToDelete = availabilityRepository.findByAccommodation(accommodation);
+
+        availabilityRepository.deleteAll(availabilitiesToDelete);
     }
 }

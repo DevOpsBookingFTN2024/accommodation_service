@@ -1,6 +1,5 @@
 package uns.ac.rs.accommodation_service.dto;
 
-import jdk.jshell.Snippet;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +13,6 @@ import java.util.UUID;
 @Builder
 public class SelectAccommodationDTO {
     private UUID id;
-    private String name;
 
+    private String name;
 }

@@ -52,6 +52,7 @@ public class AvailabilityController {
         return ResponseEntity.ok(messageResponse);
     }
 
+    //endpoint koristi ReservationService
     @PutMapping("/reserve")
     public ResponseEntity<?> reserveAvailabilities(@RequestBody List<AvailabilityDTO> availabilityDTOs,
                                                    @RequestHeader("Authorization") String authorizationHeader) {
@@ -60,14 +61,15 @@ public class AvailabilityController {
         return ResponseEntity.ok(messageResponse);
     }
 
+    //endpoint koristi ReservationService
     @PutMapping("/release/{accommodationId}")
     public ResponseEntity<?> releaseAvailabilities(@PathVariable UUID accommodationId,
                                                    @RequestParam LocalDate dateFrom,
                                                    @RequestParam LocalDate dateTo,
                                                    @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
-        MessageResponse messageResponse = availabilityService.releaseAvailabilities(accommodationId,
-                dateFrom, dateTo, jwtToken);
+        MessageResponse messageResponse = availabilityService
+                .releaseAvailabilities(accommodationId, dateFrom, dateTo, jwtToken);
         return ResponseEntity.ok(messageResponse);
     }
 }

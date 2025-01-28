@@ -27,7 +27,8 @@ public class AccommodationController {
     public ResponseEntity<?> createAccommodation(@ModelAttribute CreateAccommodationRequest createAccommodationRequest,
                                                  @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
-        MessageResponse messageResponse = accommodationService.createAccommodation(createAccommodationRequest, jwtToken);
+        MessageResponse messageResponse = accommodationService
+                .createAccommodation(createAccommodationRequest, jwtToken);
         return ResponseEntity.ok(messageResponse);
     }
 
@@ -60,8 +61,8 @@ public class AccommodationController {
                                                  @ModelAttribute UpdateAccommodationRequest updateAccommodationRequest,
                                                  @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
-        MessageResponse messageResponse = accommodationService.updateAccommodation(
-                accommodationId, updateAccommodationRequest, jwtToken);
+        MessageResponse messageResponse = accommodationService
+                .updateAccommodation(accommodationId, updateAccommodationRequest, jwtToken);
         return ResponseEntity.ok(messageResponse );
     }
 
@@ -87,8 +88,8 @@ public class AccommodationController {
             @RequestParam Integer guestCount,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        List<SearchAccommodationDTO> searchAccommodationDTOS = accommodationService.searchAccommodations(city, country,
-                guestCount, startDate.toLocalDate(), endDate.toLocalDate());
+        List<SearchAccommodationDTO> searchAccommodationDTOS = accommodationService
+                .searchAccommodations(city, country, guestCount, startDate.toLocalDate(), endDate.toLocalDate());
         return ResponseEntity.ok(searchAccommodationDTOS);
     }
 }

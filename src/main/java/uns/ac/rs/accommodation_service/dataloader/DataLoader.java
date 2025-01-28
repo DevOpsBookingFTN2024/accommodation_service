@@ -16,30 +16,39 @@ public class DataLoader implements CommandLineRunner {
         if (!facilityRepository.existsByName("Wi-Fi")) {
             facilityRepository.save(new Facility(null, "Wi-Fi"));
         }
+
         if (!facilityRepository.existsByName("Parking lot")) {
             facilityRepository.save(new Facility(null, "Parking lot"));
         }
+
         if (!facilityRepository.existsByName("TV")) {
             facilityRepository.save(new Facility(null, "TV"));
         }
+
         if (!facilityRepository.existsByName("Kitchen")) {
             facilityRepository.save(new Facility(null, "Kitchen"));
         }
+
         if (!facilityRepository.existsByName("Air condition")) {
             facilityRepository.save(new Facility(null, "Air condition"));
         }
+
         if (!facilityRepository.existsByName("Swimming pool")) {
             facilityRepository.save(new Facility(null, "Swimming pool"));
         }
+
         if (!facilityRepository.existsByName("Fitness center")) {
             facilityRepository.save(new Facility(null, "Fitness center"));
         }
+
         if (!facilityRepository.existsByName("Terrace")) {
             facilityRepository.save(new Facility(null, "Terrace"));
         }
+
         if (!facilityRepository.existsByName("Barbecue")) {
             facilityRepository.save(new Facility(null, "Barbecue"));
         }
+
         if (!facilityRepository.existsByName("Additional toilet")) {
             facilityRepository.save(new Facility(null, "Additional toilet"));
         }
