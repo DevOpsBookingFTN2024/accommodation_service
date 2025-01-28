@@ -14,6 +14,8 @@ import uns.ac.rs.accommodation_service.model.Accommodation;
 import uns.ac.rs.accommodation_service.model.Facility;
 import uns.ac.rs.accommodation_service.repository.AccommodationRepository;
 import uns.ac.rs.accommodation_service.repository.FacilityRepository;
+import uns.ac.rs.accommodation_service.service.client.ReservationServiceClient;
+import uns.ac.rs.accommodation_service.service.client.UserServiceClient;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -24,22 +26,30 @@ import java.time.temporal.ChronoUnit;
 @Transactional
 public class AccommodationService {
     private final AccommodationRepository accommodationRepository;
+
     private final FacilityRepository facilityRepository;
+
     private final UserServiceClient userServiceClient;
+
     private final AvailabilityService availabilityService;
+
     private final PhotoService photoService;
+
+    private final ReservationServiceClient reservationServiceClient;
 
     @Autowired
     public AccommodationService(AccommodationRepository accommodationRepository,
                                 FacilityRepository facilityRepository,
                                 UserServiceClient userServiceClient,
                                 AvailabilityService availabilityService,
-                                PhotoService photoService) {
+                                PhotoService photoService,
+                                ReservationServiceClient reservationServiceClient) {
         this.accommodationRepository = accommodationRepository;
         this.facilityRepository = facilityRepository;
         this.userServiceClient = userServiceClient;
         this.availabilityService = availabilityService;
         this.photoService = photoService;
+        this.reservationServiceClient = reservationServiceClient;
     }
 
     @Transactional
@@ -89,7 +99,8 @@ public class AccommodationService {
         return accommodationDTOS
                 .stream()
                 .peek(accommodationDTO -> {
-                    Set<PhotoDTO> photos = new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId()));
+                    Set<PhotoDTO> photos = new HashSet<>(photoService
+                            .getAllPhotosByAccommodation(accommodationDTO.getId()));
                     accommodationDTO.setPhotos(photos);
                 })
                 .collect(Collectors.toList());
@@ -105,10 +116,11 @@ public class AccommodationService {
 
     public List<SearchAccommodationDTO> getAllAccommodationsByHost(String host) {
         List<Accommodation> accommodations = accommodationRepository.findByHost(host);
-        List<SearchAccommodationDTO> searchAccommodationDTOS = accommodations.stream()
+        List<SearchAccommodationDTO> searchAccommodationDTOS = accommodations
+                .stream()
                 .map(accommodation -> {
-
-                    List<AvailabilityDTO> availabilitiesAll = availabilityService.getAllAvailabilitiesByAccommodation(accommodation.getId());
+                    List<AvailabilityDTO> availabilitiesAll = availabilityService
+                            .getAllAvailabilitiesByAccommodation(accommodation.getId());
 
                     List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
                             .filter(av -> av.getDate() != null &&
@@ -121,7 +133,8 @@ public class AccommodationService {
         return searchAccommodationDTOS
                 .stream()
                 .peek(searchAccommodationDTO -> {
-                    Set<PhotoDTO> photos = new HashSet<>(photoService.getAllPhotosByAccommodation(searchAccommodationDTO.getAccommodationDTO().getId()));
+                    Set<PhotoDTO> photos = new HashSet<>(photoService
+                            .getAllPhotosByAccommodation(searchAccommodationDTO.getAccommodationDTO().getId()));
                     searchAccommodationDTO.getAccommodationDTO().setPhotos(photos);
                 })
                 .collect(Collectors.toList());
@@ -134,7 +147,6 @@ public class AccommodationService {
                     return new SelectAccommodationDTO(accommodation.getId(), accommodation.getName());
                 })
                 .collect(Collectors.toList());
-
     }
 
     @Transactional
@@ -206,15 +218,17 @@ public class AccommodationService {
         List<Accommodation> accommodations = accommodationRepository
                 .findMatchingAccommodations(city, country, guestCount, startDate, finalEndDate, daysInRange);
 
-        return accommodations.stream()
+        return accommodations
+                .stream()
                 .map(accommodation -> {
+                    List<AvailabilityDTO> availabilitiesAll = availabilityService
+                            .getAllAvailabilitiesByAccommodation(accommodation.getId());
 
-                    List<AvailabilityDTO> availabilitiesAll = availabilityService.getAllAvailabilitiesByAccommodation(accommodation.getId());
-
-                    List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
+                    List<AvailabilityDTO> availabilities = availabilitiesAll
+                            .stream()
                             .filter(av -> av.getDate() != null &&
-                                    !av.getDate().isBefore(startDate) &&
-                                    !av.getDate().isAfter(finalEndDate))
+                                          !av.getDate().isBefore(startDate) &&
+                                          !av.getDate().isAfter(finalEndDate))
                             .toList();
 
                     return getSearchAccommodationObject(accommodation, availabilities, daysInRange, guestCount);
@@ -222,13 +236,18 @@ public class AccommodationService {
                 .toList();
     }
 
-    private SearchAccommodationDTO getSearchAccommodationObject(Accommodation accommodation, List<AvailabilityDTO> availabilities, Integer daysInRange, Integer guestCount ){
-        Double pricePerGuest = availabilities.stream()
+    private SearchAccommodationDTO getSearchAccommodationObject(Accommodation accommodation,
+                                                                List<AvailabilityDTO> availabilities,
+                                                                Integer daysInRange,
+                                                                Integer guestCount) {
+        Double pricePerGuest = availabilities
+                .stream()
                 .map(AvailabilityDTO::getPricePerGuest)
                 .findFirst()
                 .orElse(null);
 
-        Double pricePerUnit = availabilities.stream()
+        Double pricePerUnit = availabilities
+                .stream()
                 .map(AvailabilityDTO::getPricePerUnit)
                 .findFirst()
                 .orElse(null);
@@ -236,9 +255,11 @@ public class AccommodationService {
         Double totalPrice = 0.0;
 
         if (accommodation.getPricingStrategy() == EPricingStrategy.PER_UNIT){
-            totalPrice = availabilities.stream()
+            totalPrice = availabilities
+                    .stream()
                     .mapToDouble(AvailabilityDTO::getPricePerUnit)
                     .sum();
+
             pricePerUnit = totalPrice/daysInRange;
         } else {
             if (pricePerGuest != null)
@@ -247,7 +268,9 @@ public class AccommodationService {
 
         AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
         accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
-        return SearchAccommodationDTO.builder()
+
+        return SearchAccommodationDTO
+                .builder()
                 .accommodationDTO(accommodationDTO)
                 .pricePerGuest(pricePerGuest)
                 .pricePerUnit(pricePerUnit)
@@ -255,7 +278,6 @@ public class AccommodationService {
                 .build();
     }
 
-    //potrebno je doraditi kad se zavrsi ReservationService
     public MessageResponse deleteAccommodation(UUID accommodationId, String jwtToken) {
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
         if (userDetails == null) {
@@ -271,11 +293,22 @@ public class AccommodationService {
             throw new SecurityException("User is not the owner of this accommodation.");
         }
 
-        accommodationRepository.delete(accommodation);
-        return new MessageResponse("Accommodation deleted successfully.");
+        if(!reservationServiceClient.isAccommodationHasAcceptedReservation(accommodationId)) {
+            for(PhotoDTO photo : photoService.getAllPhotosByAccommodation(accommodationId)) {
+                photoService.deletePhoto(photo.getId(), jwtToken);
+            }
+
+            availabilityService.deleteAvailabilitiesForAccommodation(accommodation);
+
+            accommodationRepository.delete(accommodation);
+
+            return new MessageResponse("Accommodation deleted successfully.");
+        } else {
+            throw new SecurityException("You cannot delete this accommodation.");
+        }
     }
 
-    //potrebno je doraditi kad se zavrsi ReservationService
+    //metodu koristi UserService
     public MessageResponse deleteAllAccommodationsByHost(String jwtToken) {
         UserDTO userDetails = userServiceClient.getUserDetails(jwtToken);
         if (userDetails == null) {
@@ -285,12 +318,11 @@ public class AccommodationService {
             throw new SecurityException("User do not have permission for this action.");
         }
 
-        List<Accommodation> accommodations = accommodationRepository.findByHost(userDetails.getUsername());
-        if (accommodations.isEmpty()) {
-            throw new NoSuchElementException("No accommodations found for the host.");
-        }
+        List<Accommodation> accommodationsToDelete = accommodationRepository.findByHost(userDetails.getUsername());
 
-        accommodationRepository.deleteAll(accommodations);
+        for(Accommodation accommodation : accommodationsToDelete) {
+            deleteAccommodation(accommodation.getId(), jwtToken);
+        }
         return new MessageResponse("All accommodations deleted successfully.");
     }
 }

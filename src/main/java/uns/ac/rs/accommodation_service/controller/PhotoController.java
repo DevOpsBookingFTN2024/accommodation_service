@@ -44,9 +44,11 @@ public class PhotoController {
                 contentType = "application/octet-stream";
             }
 
-            return ResponseEntity.ok()
+            return ResponseEntity
+                    .ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileResource.getFilename() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" +
+                            fileResource.getFilename() + "\"")
                     .body(fileResource);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
