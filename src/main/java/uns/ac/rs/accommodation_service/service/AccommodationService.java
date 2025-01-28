@@ -9,6 +9,7 @@ import uns.ac.rs.accommodation_service.dto.request.CreateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
 import uns.ac.rs.accommodation_service.mapper.AccommodationMapper;
+import uns.ac.rs.accommodation_service.mapper.FacilityMapper;
 import uns.ac.rs.accommodation_service.model.*;
 import uns.ac.rs.accommodation_service.model.Accommodation;
 import uns.ac.rs.accommodation_service.model.Facility;
@@ -146,6 +147,20 @@ public class AccommodationService {
                 .map(accommodation -> {
                     return new SelectAccommodationDTO(accommodation.getId(), accommodation.getName());
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<SelectAccommodationDTO> getAllSelectAccommodations() {
+        return  accommodationRepository.findAll()
+                .stream()
+                .map(accommodation -> new SelectAccommodationDTO(accommodation.getId(), accommodation.getName()))
+                .collect(Collectors.toList());
+    }
+
+    public List<FacilityDTO> getAllFacilities() {
+        return  facilityRepository.findAll()
+                .stream()
+                .map(FacilityMapper::toFacilityDTO)
                 .collect(Collectors.toList());
     }
 
