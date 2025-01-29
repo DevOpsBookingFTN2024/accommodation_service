@@ -6,11 +6,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uns.ac.rs.accommodation_service.dto.AccommodationDTO;
+import uns.ac.rs.accommodation_service.dto.FacilityDTO;
 import uns.ac.rs.accommodation_service.dto.SearchAccommodationDTO;
 import uns.ac.rs.accommodation_service.dto.SelectAccommodationDTO;
 import uns.ac.rs.accommodation_service.dto.request.CreateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.request.UpdateAccommodationRequest;
 import uns.ac.rs.accommodation_service.dto.response.MessageResponse;
+import uns.ac.rs.accommodation_service.model.Facility;
 import uns.ac.rs.accommodation_service.service.AccommodationService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +55,18 @@ public class AccommodationController {
     @GetMapping("/allSelect/{host}")
     public ResponseEntity<?> getAllSelectAccommodationsByHost(@PathVariable String host) {
         List<SelectAccommodationDTO> accommodations = accommodationService.getAllSelectAccommodationsByHost(host);
+        return ResponseEntity.ok(accommodations);
+    }
+
+    @GetMapping("/allSelect")
+    public ResponseEntity<?> getAllSelectAccommodations() {
+        List<SelectAccommodationDTO> accommodations = accommodationService.getAllSelectAccommodations();
+        return ResponseEntity.ok(accommodations);
+    }
+
+    @GetMapping("/allFacilities")
+    public ResponseEntity<?> getAllFacilities() {
+        List<FacilityDTO> accommodations = accommodationService.getAllFacilities();
         return ResponseEntity.ok(accommodations);
     }
 
