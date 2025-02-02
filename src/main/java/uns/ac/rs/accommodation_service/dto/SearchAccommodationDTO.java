@@ -17,4 +17,8 @@ public class SearchAccommodationDTO {
     private Double pricePerUnit;
 
     private Double priceAll;
+
+    private Double averageAccommodationScore;
+
+    private Double averageHostScore;
 }
