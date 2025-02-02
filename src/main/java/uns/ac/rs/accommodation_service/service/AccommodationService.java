@@ -15,6 +15,7 @@ import uns.ac.rs.accommodation_service.model.Accommodation;
 import uns.ac.rs.accommodation_service.model.Facility;
 import uns.ac.rs.accommodation_service.repository.AccommodationRepository;
 import uns.ac.rs.accommodation_service.repository.FacilityRepository;
+import uns.ac.rs.accommodation_service.service.client.RatingServiceClient;
 import uns.ac.rs.accommodation_service.service.client.ReservationServiceClient;
 import uns.ac.rs.accommodation_service.service.client.UserServiceClient;
 import java.time.LocalDate;
@@ -38,19 +39,22 @@ public class AccommodationService {
 
     private final ReservationServiceClient reservationServiceClient;
 
+    private final RatingServiceClient ratingServiceClient;
+
     @Autowired
     public AccommodationService(AccommodationRepository accommodationRepository,
                                 FacilityRepository facilityRepository,
                                 UserServiceClient userServiceClient,
                                 AvailabilityService availabilityService,
                                 PhotoService photoService,
-                                ReservationServiceClient reservationServiceClient) {
+                                ReservationServiceClient reservationServiceClient, RatingServiceClient ratingServiceClient) {
         this.accommodationRepository = accommodationRepository;
         this.facilityRepository = facilityRepository;
         this.userServiceClient = userServiceClient;
         this.availabilityService = availabilityService;
         this.photoService = photoService;
         this.reservationServiceClient = reservationServiceClient;
+        this.ratingServiceClient = ratingServiceClient;
     }
 
     @Transactional
@@ -246,7 +250,7 @@ public class AccommodationService {
                                           !av.getDate().isAfter(finalEndDate))
                             .toList();
 
-                    return getSearchAccommodationObject(accommodation, availabilities, daysInRange, guestCount);
+                    return  getSearchAccommodationObject(accommodation, availabilities, daysInRange, guestCount);
                 })
                 .toList();
     }
@@ -284,12 +288,17 @@ public class AccommodationService {
         AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
         accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
 
+        Double averageAccommoationRating = ratingServiceClient.getAccommodationAverageRating(accommodation.getId());
+        Double averageHostRating = ratingServiceClient.getHostAverageRating(accommodation.getHost());
+
         return SearchAccommodationDTO
                 .builder()
                 .accommodationDTO(accommodationDTO)
                 .pricePerGuest(pricePerGuest)
                 .pricePerUnit(pricePerUnit)
                 .priceAll(totalPrice)
+                .averageAccommodationScore(averageAccommoationRating)
+                .averageHostScore(averageHostRating)
                 .build();
     }
 
