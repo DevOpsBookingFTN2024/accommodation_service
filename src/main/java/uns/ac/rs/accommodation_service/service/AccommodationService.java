@@ -111,12 +111,20 @@ public class AccommodationService {
                 .collect(Collectors.toList());
     }
 
-    public AccommodationDTO getAccommodationById(UUID accommodationId) {
+    public SearchAccommodationDTO getAccommodationById(UUID accommodationId) {
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
                 .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
-        AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
-        accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
-        return accommodationDTO;
+        List<AvailabilityDTO> availabilitiesAll = availabilityService
+                .getAllAvailabilitiesByAccommodation(accommodation.getId());
+
+        List<AvailabilityDTO> availabilities = availabilitiesAll.stream()
+                .filter(av -> av.getDate() != null &&
+                        av.getDate().isEqual(LocalDate.from(ZonedDateTime.now())))
+                .toList();
+
+        SearchAccommodationDTO searchAccommodationDTO = getSearchAccommodationObject(accommodation, availabilities, 1, 1);
+        searchAccommodationDTO.getAccommodationDTO().setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(searchAccommodationDTO.getAccommodationDTO().getId())));
+        return searchAccommodationDTO;
     }
 
     public List<SearchAccommodationDTO> getAllAccommodationsByHost(String host) {
