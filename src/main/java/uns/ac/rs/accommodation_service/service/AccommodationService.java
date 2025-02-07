@@ -111,7 +111,15 @@ public class AccommodationService {
                 .collect(Collectors.toList());
     }
 
-    public SearchAccommodationDTO getAccommodationById(UUID accommodationId) {
+    public AccommodationDTO getAccommodationById(UUID accommodationId) {
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+                .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
+        AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
+        accommodationDTO.setPhotos(new HashSet<>(photoService.getAllPhotosByAccommodation(accommodationDTO.getId())));
+        return accommodationDTO;
+    }
+
+    public SearchAccommodationDTO getAccommodationByIdForHost(UUID accommodationId) {
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
                 .orElseThrow(() -> new NoSuchElementException("Accommodation not found with id: " + accommodationId));
         List<AvailabilityDTO> availabilitiesAll = availabilityService

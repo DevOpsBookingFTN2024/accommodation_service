@@ -42,7 +42,13 @@ public class AccommodationController {
 
     @GetMapping("/{accommodationId}")
     public ResponseEntity<?> getAccommodationById(@PathVariable UUID accommodationId) {
-        SearchAccommodationDTO accommodation = accommodationService.getAccommodationById(accommodationId);
+        AccommodationDTO accommodation = accommodationService.getAccommodationById(accommodationId);
+        return ResponseEntity.ok(accommodation);
+    }
+
+    @GetMapping("/host/{accommodationId}")
+    public ResponseEntity<?> getAccommodationByIdForHost(@PathVariable UUID accommodationId) {
+        SearchAccommodationDTO accommodation = accommodationService.getAccommodationByIdForHost(accommodationId);
         return ResponseEntity.ok(accommodation);
     }
 
