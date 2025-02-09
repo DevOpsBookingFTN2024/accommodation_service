@@ -1,6 +1,7 @@
 package uns.ac.rs.accommodation_service.controller;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*")
+@Slf4j
 @RestController
 @RequestMapping("/availabilities")
 public class AvailabilityController {
@@ -25,20 +27,26 @@ public class AvailabilityController {
                                                 @Valid @RequestBody CreateAvailabilityRequest createAvailabilityRequest,
                                                 @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
+        log.info("Creating availability for accommodation ID: {}", accommodationId);
         MessageResponse messageResponse = availabilityService.createAvailability(
                 accommodationId, createAvailabilityRequest, jwtToken);
+        log.info("Availability created successfully for accommodation ID: {}", accommodationId);
         return ResponseEntity.ok(messageResponse );
     }
 
     @GetMapping("/all/{accommodationId}")
     public ResponseEntity<?> getAllAvailabilitiesByAccommodation(@PathVariable UUID accommodationId) {
+        log.info("Fetching all availabilities for accommodation ID: {}", accommodationId);
         List<AvailabilityDTO> availabilities = availabilityService.getAllAvailabilitiesByAccommodation(accommodationId);
+        log.info("Found {} availabilities for accommodation ID: {}", availabilities.size(), accommodationId);
         return ResponseEntity.ok(availabilities);
     }
 
     @GetMapping("/{availabilityId}")
     public ResponseEntity<?> getAvailabilityById(@PathVariable UUID availabilityId) {
+        log.info("Fetching availability with ID: {}", availabilityId);
         AvailabilityDTO availability = availabilityService.getAvailabilityById(availabilityId);
+        log.info("Availability fetched successfully for ID: {}", availabilityId);
         return ResponseEntity.ok(availability);
     }
 
@@ -47,8 +55,10 @@ public class AvailabilityController {
                                                 @Valid @RequestBody UpdateAvailabilityRequest updateAvailabilityRequest,
                                                 @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
+        log.info("Updating availability with ID: {}", availabilityId);
         MessageResponse messageResponse = availabilityService.updateAvailability(
                 availabilityId, updateAvailabilityRequest, jwtToken);
+        log.info("Availability updated successfully for ID: {}", availabilityId);
         return ResponseEntity.ok(messageResponse);
     }
 
@@ -57,7 +67,9 @@ public class AvailabilityController {
     public ResponseEntity<?> reserveAvailabilities(@RequestBody List<AvailabilityDTO> availabilityDTOs,
                                                    @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
+        log.info("Reserving {} availabilities", availabilityDTOs.size());
         MessageResponse messageResponse = availabilityService.reserveAvailabilities(availabilityDTOs, jwtToken);
+        log.info("Availabilities reserved successfully");
         return ResponseEntity.ok(messageResponse);
     }
 
@@ -68,8 +80,10 @@ public class AvailabilityController {
                                                    @RequestParam LocalDate dateTo,
                                                    @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
+        log.info("Releasing availabilities for accommodation ID: {} from {} to {}", accommodationId, dateFrom, dateTo);
         MessageResponse messageResponse = availabilityService
                 .releaseAvailabilities(accommodationId, dateFrom, dateTo, jwtToken);
+        log.info("Availabilities released successfully for accommodation ID: {}", accommodationId);
         return ResponseEntity.ok(messageResponse);
     }
 }
