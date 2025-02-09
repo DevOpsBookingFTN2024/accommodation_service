@@ -21,6 +21,7 @@ import java.util.UUID;
 public class PhotoController {
     @Autowired
     private PhotoService photoService;
+    // private final Path externalFolder =  Paths.get("/app/uploads");
 
     private final Path externalFolder = Paths.get("uploads");
 
