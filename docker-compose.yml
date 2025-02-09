@@ -1,14 +1,20 @@
+networks:
+  booking-network:
+    external: true
+
 services:
   postgresql-db-accommodation:
     image: postgres:latest
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_DB: accommodation_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
     volumes:
       - postgresql-db-accommodation:/var/lib/postgresql/data
+    networks:
+      - booking-network
 
   accommodation-service:
     build: .
@@ -18,10 +24,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
-      - "8080:8080"
+      - "8082:8082"
     depends_on:
       - postgresql-db-accommodation
     restart: on-failure
+    volumes:
+      - uploads-data:/app/uploads
+    networks:
+      - booking-network
 
 volumes:
   postgresql-db-accommodation:
+  uploads-data:
