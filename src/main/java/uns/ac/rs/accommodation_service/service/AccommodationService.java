@@ -275,17 +275,8 @@ public class AccommodationService {
                                                                 List<AvailabilityDTO> availabilities,
                                                                 Integer daysInRange,
                                                                 Integer guestCount) {
-        Double pricePerGuest = availabilities
-                .stream()
-                .map(AvailabilityDTO::getPricePerGuest)
-                .findFirst()
-                .orElse(null);
-
-        Double pricePerUnit = availabilities
-                .stream()
-                .map(AvailabilityDTO::getPricePerUnit)
-                .findFirst()
-                .orElse(null);
+        Double pricePerGuest = 0.0;
+        Double pricePerUnit = 0.0;
 
         Double totalPrice = 0.0;
 
@@ -297,8 +288,11 @@ public class AccommodationService {
 
             pricePerUnit = totalPrice/daysInRange;
         } else {
-            if (pricePerGuest != null)
-                totalPrice = pricePerGuest * guestCount * daysInRange;
+            totalPrice = availabilities
+                    .stream()
+                    .mapToDouble(availability -> availability.getPricePerGuest() * guestCount)
+                    .sum();
+            pricePerGuest = totalPrice/guestCount;
         }
 
         AccommodationDTO accommodationDTO = AccommodationMapper.toAccommodationDTO(accommodation);
