@@ -15,8 +15,8 @@ public interface AccommodationRepository extends JpaRepository<Accommodation, UU
 
     @Query("SELECT a FROM Accommodation a " +
             "JOIN a.availabilities av " +
-            "WHERE (:city IS NULL OR a.city = :city) " +
-            "AND (:country IS NULL OR a.country = :country) " +
+            "WHERE (:city IS NULL OR LOWER(a.city) LIKE LOWER(CONCAT('%', :city, '%'))) " +
+            "AND (:country IS NULL OR LOWER(a.country) LIKE LOWER(CONCAT('%', :country, '%'))) " +
             "AND a.minimumGuests <= :guestCount " +
             "AND a.maximumGuests >= :guestCount " +
             "AND av.isAvailable = true " +
